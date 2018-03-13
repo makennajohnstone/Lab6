@@ -16,6 +16,7 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
 import java.util.concurrent.TimeUnit;
+import RoomsQuery;
 
 public class InnReservations {
   public Connection conn;
@@ -56,7 +57,7 @@ public class InnReservations {
           RoomsQuery.roomsQuery();
           break;
         case "Reservations":
-          ReservationsQuery();
+          reservationsQuery();
           break;
         case "Revenue":
           System.out.println("Revenue query selected");
@@ -71,8 +72,36 @@ public class InnReservations {
     }
   }
 
+  //Outputs a list of rooms sorted by popularity
+  private void roomsQuery() {
+    //createRoomsQuery();
+    //String query = createRoomsQuery();
+    String query = "select * from mejohnst.lab6_rooms";
+    //send query
+    ResultSet rs = null;
+    try {
+      rs = sendQuery(query);
+      printRoomResults(rs);
 
+    }
+    catch (SQLException e) {
+      System.out.println("SQLException: " + e.getMessage());
+    }
+  }
+  private void printRoomResults(ResultSet rs) throws SQLException {
+    while (rs.next()) {
+      String roomCode = rs.getString("RoomCode");
+      String roomName = rs.getString("RoomName");
+      int beds = rs.getInt("Beds");
+      String bedType = rs.getString("bedType");
+      int maxOcc = rs.getInt("maxOcc");
+      double basePrice = rs.getDouble("basePrice");
+      String decor = rs.getString("decor");
 
+      System.out.format("%s %s %d %s %d %.2f %s %n", roomCode, roomName, beds,
+        bedType, maxOcc, basePrice, decor);
+    }
+  }
   private ResultSet sendQuery(String query) throws SQLException {
     Statement stmt = conn.createStatement();
     ResultSet rs = stmt.executeQuery(query);
