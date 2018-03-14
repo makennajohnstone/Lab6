@@ -1,10 +1,11 @@
-public abstract class Query {
-  public abstract String createQuery();
-  public ResultSet executeQuery(String query) {
-    Statement stmt = conn.createStatement();
-    ResultSet rs = stmt.executeQuery(query);
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.sql.Connection;
+import java.sql.SQLException;
 
-    return rs;
-  }
-  public abstract void printResults();
+public abstract class Query {
+
+  public abstract ResultSet executeQuery(String query) throws SQLException;
+  public abstract String createQuery();
+  public abstract void printResults(ResultSet rs) throws SQLException;
 }

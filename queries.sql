@@ -35,41 +35,15 @@ insert into mejohnst.lab6_reservations (CODE, Room, CheckIn, CheckOut, Rate, Las
 
 
 
-  SELECT lab6_rooms.*, (SELECT
-   CASE
-   WHEN not exists (
-     
-     SELECT second.CheckIn
-     FROM lab6_reservations second
-     WHERE second.Room = first.Room AND second.Checkout > CURDATE() AND second.CheckIn <= CURDATE()
-   ) THEN CURDATE()
-    
+-- find the rooms that do not have a reservation in the range.
 
-   ELSE min(first.CheckOut)
-   END
+Select *
+from lab6_reservations RE1
+WHERE ('2018-01-01' not between RE1.CheckIn AND RE1.CheckOut) AND ('2018-01-05' not between RE1.CheckIn AND RE1.CheckOut)
 
-   FROM lab6_reservations first
-   WHERE first.Room = lab6_rooms.RoomCode AND first.CheckIn >= CURDATE() AND not exists (
-     SELECT *  -- with EXISTS, projection doesn't matter, could be any column or all
-     FROM lab6_reservations third
-     WHERE third.Room = first.Room and third.CheckIn = first.CheckOut
-   )
-
-  ) as FirstAvailable, A1.Length, A1.RecentCheckOut, A2.PopularityScore
-FROM lab6_rooms
-
-JOIN
-
-(SELECT lab6_reservations.Room as Room, DATEDIFF(MAX(lab6_reservations.CheckOut), MAX(lab6_reservations.CheckIn)) as Length, MAX(lab6_reservations.CheckOut) as RecentCheckOut
-FROM lab6_reservations
-WHERE lab6_reservations.CheckOut <= CURDATE()
-GROUP BY lab6_reservations.Room) A1 ON A1.Room = lab6_rooms.RoomCode
-
-JOIN
-
-(SELECT lab6_rooms.RoomCode as Room,  ROUND((SUM(DATEDIFF(LEAST(lab6_reservations.CheckOut, CURDATE()), GREATEST(lab6_reservations.CheckIn, DATE_ADD(lab6_reservations.CheckIn, INTERVAL -180 DAY))))/180), 2) as PopularityScore
-FROM lab6_reservations
-JOIN lab6_rooms ON lab6_rooms.RoomCode = lab6_reservations.Room
-WHERE (lab6_reservations.CheckIn <= CURDATE()) AND (lab6_reservations.CheckOut >= DATE_ADD(lab6_reservations.CheckIn, INTERVAL -180 DAY))
-GROUP BY lab6_reservations.Room) A2 ON A2.Room = lab6_rooms.RoomCode
-ORDER BY A2.PopularityScore DESC;
+Select DISTINCT RE1.Room
+from lab6_reservations RE1
+WHERE RE1.Room not IN (
+  Select RE2.Room
+  from lab6_reservations RE2
+  WHERE (('2018-02-19' between RE2.CheckIn AND DATE_ADD(RE2.Checkout, INTERVAL -1 DAY)) OR (('2018-03-04' between DATE_ADD(RE2.CheckIn, INTERVAL +1 DAY) AND RE2.Checkout))));
